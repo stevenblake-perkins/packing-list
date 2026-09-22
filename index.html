@@ -211,22 +211,28 @@
   .item-required-pill {
     display: inline-flex;
     align-items: baseline;
-    gap: 6px;
-    margin-top: 6px;
+    gap: 7px;
+    margin-top: 7px;
     background: var(--cyan-tint);
-    border-radius: 7px;
-    padding: 3px 10px 4px;
+    border: 2px solid var(--cyan-mid);
+    border-radius: 8px;
+    padding: 5px 12px 6px;
+    min-width: 112px;
   }
   .item-required-pill .req-num {
-    font-size: 18px;
+    font-size: 24px;
     font-weight: 700;
     color: var(--cyan-ink);
     font-variant-numeric: tabular-nums;
     font-family: 'Bree Serif', Georgia, serif;
+    line-height: 1;
   }
   .item-required-pill .req-label {
-    font-size: 11.5px;
-    color: var(--grey-soft);
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--grey);
+    text-transform: uppercase;
+    letter-spacing: .02em;
   }
   .item-shared {
     font-size: 12px;
@@ -352,6 +358,13 @@
   }
   .btn-ghost:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 
+  .submit-note {
+    font-size: 11.5px;
+    color: var(--grey-soft);
+    text-align: center;
+    line-height: 1.35;
+  }
+
   .overlay {
     position: fixed;
     inset: 0;
@@ -432,6 +445,7 @@
 
   #main { display: block; }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -452,6 +466,10 @@
 <div class="wrap" id="main">
 
   <div class="meta-card">
+    <div class="full">
+      <label for="locationName">Packing list location</label>
+      <input type="text" id="locationName" placeholder="e.g. John Curtin College of the Arts" autocomplete="organization">
+    </div>
     <div>
       <label for="staffName">Packed by</label>
       <input type="text" id="staffName" placeholder="Your name" autocomplete="name">
@@ -487,6 +505,7 @@
       <button type="button" class="btn btn-ghost" id="submitShortBtn" style="display:none;">Submit with shortages</button>
       <button type="button" class="btn btn-primary" id="submitBtn" disabled>Submit checklist</button>
     </div>
+    <div class="submit-note">Submitting creates a PDF. If your device cannot email it directly, the PDF will be downloaded and your email app will open with the checklist summary.</div>
   </div>
 </footer>
 
@@ -503,7 +522,7 @@
 </div>
 
 <script>
-const ITEMS = [{"item": "Spot Test Patient", "stations": ["Spot Test"], "components": [{"station": "Spot Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Spot Test Staph", "stations": ["Spot Test"], "components": [{"station": "Spot Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Spot Test Yeast", "stations": ["Spot Test"], "components": [{"station": "Spot Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Spot Test Test", "stations": ["Spot Test"], "components": [{"station": "Spot Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Paper Towels (three drawn circles)", "stations": ["Spot Test"], "components": [{"station": "Spot Test", "consumable": true, "qtyPerDay": 45}]}, {"item": "Bubble Test Patient", "stations": ["Bubble Test"], "components": [{"station": "Bubble Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Bubble Test E.coli", "stations": ["Bubble Test"], "components": [{"station": "Bubble Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Bubble Test Tuberculosis", "stations": ["Bubble Test"], "components": [{"station": "Bubble Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Bubble Test Test", "stations": ["Bubble Test"], "components": [{"station": "Bubble Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Test Tubes", "stations": ["Bubble Test", "Clumping Test", "Clearing Test"], "components": [{"station": "Bubble Test", "consumable": false, "qtyPerDay": 45}, {"station": "Clumping Test", "consumable": false, "qtyPerDay": 45}, {"station": "Clearing Test", "consumable": false, "qtyPerDay": 45}]}, {"item": "Red Rack", "stations": ["Bubble Test", "Clumping Test", "Clearing Test"], "components": [{"station": "Bubble Test", "consumable": false, "qtyPerDay": 1}, {"station": "Clumping Test", "consumable": false, "qtyPerDay": 1}, {"station": "Clearing Test", "consumable": false, "qtyPerDay": 1}]}, {"item": "Fighting Back E.coli", "stations": ["Fighting Back"], "components": [{"station": "Fighting Back", "consumable": true, "qtyPerDay": 1}]}, {"item": "Fighting Back Staph", "stations": ["Fighting Back"], "components": [{"station": "Fighting Back", "consumable": true, "qtyPerDay": 1}]}, {"item": "Fighting Back Patient", "stations": ["Fighting Back"], "components": [{"station": "Fighting Back", "consumable": true, "qtyPerDay": 1}]}, {"item": "96-well plate", "stations": ["Fighting Back"], "components": [{"station": "Fighting Back", "consumable": true, "qtyPerDay": 3}]}, {"item": "Clumping Test Patient", "stations": ["Clumping Test"], "components": [{"station": "Clumping Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clumping Test Staph", "stations": ["Clumping Test"], "components": [{"station": "Clumping Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clumping Test Strep", "stations": ["Clumping Test"], "components": [{"station": "Clumping Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clumping Test Test", "stations": ["Clumping Test"], "components": [{"station": "Clumping Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clearing Test Test A", "stations": ["Clearing Test"], "components": [{"station": "Clearing Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clearing Test Test B", "stations": ["Clearing Test"], "components": [{"station": "Clearing Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clearing Test Patient", "stations": ["Clearing Test"], "components": [{"station": "Clearing Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clearing Test Strep", "stations": ["Clearing Test"], "components": [{"station": "Clearing Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clearing Test Yeast", "stations": ["Clearing Test"], "components": [{"station": "Clearing Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Syringe", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 3}]}, {"item": "Treatment A", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 1}]}, {"item": "Treatment B", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": true, "qtyPerDay": 3}]}, {"item": "Treatment C", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 1}]}, {"item": "Treatment D", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 1}]}, {"item": "Treatment E", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 1}]}, {"item": "Weighing Tray", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 3}]}, {"item": "Scale", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 0}]}, {"item": "Micropipettes (P200 or greater)", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 11}]}, {"item": "Gloves", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": true, "qtyPerDay": 120}]}, {"item": "Micropipette Tips", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": true, "qtyPerDay": 750}]}, {"item": "Micropipette Tip Bin", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 5}]}, {"item": "Falcon Tubes", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 11}]}, {"item": "Blue Food Colouring", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Safety in the Lab Sheets", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": true, "qtyPerDay": 30}]}, {"item": "Mannequin (two arms and clothes)", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Microscope with LCD Screen", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Microscope Power Cable", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Microscope Histology Samples", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Gaffa Tape", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Extension Cable", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Power Board", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}];
+const ITEMS = [{"item": "Spot Test Patient", "stations": ["Spot Test"], "components": [{"station": "Spot Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Spot Test Staph", "stations": ["Spot Test"], "components": [{"station": "Spot Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Spot Test Yeast", "stations": ["Spot Test"], "components": [{"station": "Spot Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Spot Test Test", "stations": ["Spot Test"], "components": [{"station": "Spot Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Paper Towels (three drawn circles)", "stations": ["Spot Test"], "components": [{"station": "Spot Test", "consumable": true, "qtyPerDay": 45}]}, {"item": "Bubble Test Patient", "stations": ["Bubble Test"], "components": [{"station": "Bubble Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Bubble Test E.coli", "stations": ["Bubble Test"], "components": [{"station": "Bubble Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Bubble Test Tuberculosis", "stations": ["Bubble Test"], "components": [{"station": "Bubble Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Bubble Test Test", "stations": ["Bubble Test"], "components": [{"station": "Bubble Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Test Tubes", "stations": ["Bubble Test", "Clumping Test", "Clearing Test"], "components": [{"station": "Bubble Test", "consumable": false, "qtyPerDay": 45}, {"station": "Clumping Test", "consumable": false, "qtyPerDay": 45}, {"station": "Clearing Test", "consumable": false, "qtyPerDay": 45}]}, {"item": "Red Rack", "stations": ["Bubble Test", "Clumping Test", "Clearing Test"], "components": [{"station": "Bubble Test", "consumable": false, "qtyPerDay": 1}, {"station": "Clumping Test", "consumable": false, "qtyPerDay": 1}, {"station": "Clearing Test", "consumable": false, "qtyPerDay": 1}]}, {"item": "Fighting Back E.coli", "stations": ["Fighting Back"], "components": [{"station": "Fighting Back", "consumable": true, "qtyPerDay": 1}]}, {"item": "Fighting Back Staph", "stations": ["Fighting Back"], "components": [{"station": "Fighting Back", "consumable": true, "qtyPerDay": 1}]}, {"item": "Fighting Back Patient", "stations": ["Fighting Back"], "components": [{"station": "Fighting Back", "consumable": true, "qtyPerDay": 1}]}, {"item": "96-well plate", "stations": ["Fighting Back"], "components": [{"station": "Fighting Back", "consumable": true, "qtyPerDay": 3}]}, {"item": "Clumping Test Patient", "stations": ["Clumping Test"], "components": [{"station": "Clumping Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clumping Test Staph", "stations": ["Clumping Test"], "components": [{"station": "Clumping Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clumping Test Strep", "stations": ["Clumping Test"], "components": [{"station": "Clumping Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clumping Test Test", "stations": ["Clumping Test"], "components": [{"station": "Clumping Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clearing Test Test A", "stations": ["Clearing Test"], "components": [{"station": "Clearing Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clearing Test Test B", "stations": ["Clearing Test"], "components": [{"station": "Clearing Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clearing Test Patient", "stations": ["Clearing Test"], "components": [{"station": "Clearing Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clearing Test Strep", "stations": ["Clearing Test"], "components": [{"station": "Clearing Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Clearing Test Yeast", "stations": ["Clearing Test"], "components": [{"station": "Clearing Test", "consumable": true, "qtyPerDay": 1}]}, {"item": "Syringe", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 3}]}, {"item": "Treatment A", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 1}]}, {"item": "Treatment B", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": true, "qtyPerDay": 3}]}, {"item": "Treatment C", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 1}]}, {"item": "Treatment D", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 1}]}, {"item": "Treatment E", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 1}]}, {"item": "Weighing Tray", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 3}]}, {"item": "Scale", "stations": ["A possible treatment?"], "components": [{"station": "A possible treatment?", "consumable": false, "qtyPerDay": 1}]}, {"item": "Micropipettes (P200 or greater)", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 11}]}, {"item": "Gloves", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": true, "qtyPerDay": 120}]}, {"item": "Micropipette Tips", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": true, "qtyPerDay": 750}]}, {"item": "Micropipette Tip Bin", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 5}]}, {"item": "Falcon Tubes", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 11}]}, {"item": "Blue Food Colouring", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Safety in the Lab Sheets", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": true, "qtyPerDay": 30}]}, {"item": "Mannequin (two arms and clothes)", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Microscope with LCD Screen", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Microscope Power Cable", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Microscope Histology Samples", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Gaffa Tape", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Extension Cable", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}, {"item": "Power Board", "stations": ["Miscellaneous"], "components": [{"station": "Miscellaneous", "consumable": false, "qtyPerDay": 1}]}];
 const RECIPIENT_EMAIL = "steven.blake@perkins.org.au";
 const DEFAULT_DAYS = 3;
 
@@ -674,6 +693,7 @@ document.getElementById('packDate').value = new Date().toISOString().slice(0, 10
 
 // ---- Submit flow ----
 function buildSummary(reason) {
+  const locationName = document.getElementById('locationName').value.trim() || '(not entered)';
   const staffName = document.getElementById('staffName').value.trim() || '(not entered)';
   const packDate = document.getElementById('packDate').value || '(not entered)';
   let shortCount = 0;
@@ -690,28 +710,201 @@ function buildSummary(reason) {
   });
   const header = [
     `Workshop Packing Checklist`,
+    `Location: ${locationName}`,
     `Packed by: ${staffName}`,
     `Date: ${packDate}`,
     `Delivery days: ${currentDays}`,
     shortCount > 0 ? `Status: ${shortCount} item(s) short` : `Status: All items packed to spec`,
   ];
   if (reason) header.push(`Note on shortfall: ${reason}`);
-  return { text: header.join('\n') + '\n\n' + lines.join('\n'), staffName, packDate, shortCount };
+  return {
+    text: header.join('\n') + '\n\n' + lines.join('\n'),
+    locationName, staffName, packDate, shortCount, lines
+  };
+}
+
+function safePdfFileName(locationName, packDate) {
+  const clean = String(locationName || 'packing-list')
+    .replace(/[^a-z0-9]+/gi, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+  return `${clean || 'packing-list'}-packing-checklist-${packDate || 'date'}.pdf`;
+}
+
+function generatePdf(reason) {
+  if (!window.jspdf || !window.jspdf.jsPDF) return null;
+
+  const { jsPDF } = window.jspdf;
+  const { locationName, staffName, packDate, shortCount, lines } = buildSummary(reason);
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+  const margin = 15;
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  let y = 18;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(18);
+  doc.text('Workshop Packing Checklist', margin, y);
+  y += 8;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(10.5);
+  doc.text(`Location: ${locationName}`, margin, y); y += 5.5;
+  doc.text(`Packed by: ${staffName}`, margin, y); y += 5.5;
+  doc.text(`Date: ${packDate}`, margin, y); y += 5.5;
+  doc.text(`Delivery days: ${currentDays}`, margin, y); y += 7;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text(shortCount > 0
+    ? `STATUS: ${shortCount} item(s) short`
+    : 'STATUS: All items packed to spec', margin, y);
+  y += 8;
+
+  doc.setDrawColor(0, 174, 239);
+  doc.line(margin, y, pageWidth - margin, y);
+  y += 7;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  let currentStation = '';
+
+  stationOrder.forEach(stationName => {
+    if (y > pageHeight - 25) {
+      doc.addPage();
+      y = 18;
+    }
+    currentStation = stationName;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text(stationName, margin, y);
+    y += 6;
+
+    stationMap[stationName].forEach(it => {
+      const val = packed[it.id];
+      const num = val === '' ? 0 : parseInt(val, 10);
+      const status = num >= it.total ? 'OK' : 'SHORT';
+      const line = `${it.item} — packed ${num} / required ${it.total} [${status}]`;
+      const wrapped = doc.splitTextToSize(line, pageWidth - (margin * 2));
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9.5);
+
+      if (y + (wrapped.length * 4.5) > pageHeight - 18) {
+        doc.addPage();
+        y = 18;
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.text(`${currentStation} (continued)`, margin, y);
+        y += 6;
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(9.5);
+      }
+
+      doc.text(wrapped, margin, y, { lineHeightFactor: 1.15 });
+      y += wrapped.length * 4.5 + 1.5;
+    });
+
+    y += 2;
+  });
+
+  if (reason) {
+    if (y > pageHeight - 30) {
+      doc.addPage();
+      y = 18;
+    }
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('Shortfall note:', margin, y);
+    y += 5;
+    doc.setFont('helvetica', 'normal');
+    const noteLines = doc.splitTextToSize(reason, pageWidth - (margin * 2));
+    doc.text(noteLines, margin, y);
+  }
+
+  const pages = doc.internal.getNumberOfPages();
+  for (let page = 1; page <= pages; page++) {
+    doc.setPage(page);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(107, 118, 125);
+    doc.text(`Page ${page} of ${pages}`, pageWidth - margin, pageHeight - 8, { align: 'right' });
+    doc.setTextColor(54, 66, 74);
+  }
+
+  return {
+    doc,
+    fileName: safePdfFileName(locationName, packDate),
+    subject: `Packing checklist – ${locationName} – ${packDate}${shortCount > 0 ? ' (SHORT ' + shortCount + ')' : ''}`,
+    text
+  };
 }
 
 async function finalizeSubmission(reason) {
-  const { text, staffName, packDate, shortCount } = buildSummary(reason);
+  const result = generatePdf(reason);
 
-  const subject = `Packing checklist – ${packDate} – ${staffName}${shortCount > 0 ? ' (SHORT ' + shortCount + ')' : ''}`;
-  const mailto = `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
-  window.location.href = mailto;
+  if (!result) {
+    // Fallback if the PDF library cannot be loaded: use the browser's print-to-PDF flow.
+    const { text, subject } = buildSummary(reason);
+    const mailto = `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}`;
+    window.location.href = mailto;
+    window.setTimeout(() => window.print(), 250);
+  } else {
+    const pdfBlob = result.doc.output('blob');
+    const pdfFile = new File([pdfBlob], result.fileName, { type: 'application/pdf' });
 
-  document.getElementById('doneText').textContent = shortCount > 0
-    ? `Your checklist (with ${shortCount} short item${shortCount === 1 ? '' : 's'}) has been saved. Your email app should have opened with the summary ready to send — hit send to notify the workshop coordinator.`
-    : `Your checklist has been saved. Your email app should have opened with the summary ready to send — hit send to notify the workshop coordinator.`;
+    // If the browser supports file sharing, offer the PDF directly to the device's
+    // share sheet (which can include Mail). Otherwise download the PDF automatically.
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+      try {
+        await navigator.share({
+          title: result.subject,
+          text: result.text,
+          files: [pdfFile]
+        });
+      } catch (err) {
+        if (err && err.name !== 'AbortError') {
+          const url = URL.createObjectURL(pdfBlob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = result.fileName;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }
+      }
+    } else {
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = result.fileName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    // mailto cannot attach a browser-generated PDF, so open the email with the
+    // checklist summary. On devices supporting Share, the user can select Mail
+    // and the PDF can be attached from the share sheet.
+    window.setTimeout(() => {
+      const mailto = `mailto:${RECIPIENT_EMAIL}?subject=${encodeURIComponent(result.subject)}&body=${encodeURIComponent(result.text)}`;
+      window.location.href = mailto;
+    }, 350);
+  }
+
+  document.getElementById('doneText').textContent = shortCountMessage(reason);
   document.getElementById('main').style.display = 'none';
   document.getElementById('footerBar').style.display = 'none';
   document.getElementById('doneScreen').classList.add('open');
+}
+
+function shortCountMessage(reason) {
+  const { shortCount } = buildSummary(reason);
+  return shortCount > 0
+    ? `Your checklist PDF has been generated with ${shortCount} short item${shortCount === 1 ? '' : 's'}. If your device supports sharing, you can choose Mail to send the PDF; otherwise the PDF is downloaded and your email app opens with the checklist summary.`
+    : `Your checklist PDF has been generated. If your device supports sharing, you can choose Mail to send the PDF; otherwise the PDF is downloaded and your email app opens with the checklist summary.`;
 }
 
 document.getElementById('submitBtn').addEventListener('click', () => finalizeSubmission(null));
@@ -738,6 +931,7 @@ document.getElementById('startNewBtn').addEventListener('click', () => {
     input.value = '';
     refreshRow(it.id);
   });
+  document.getElementById('locationName').value = '';
   document.getElementById('staffName').value = '';
   document.getElementById('reasonText').value = '';
   refreshSummary();
